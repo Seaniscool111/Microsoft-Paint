@@ -2,9 +2,6 @@ module milestone1(SW, LEDR);
 	input [9:0] SW;
 	output [9:0] LEDR;
 	
-	
-	
-	
 endmodule
 
 module pen_size (w, Clock, Resetn, LEDR, y_Q, y_D);
@@ -96,11 +93,11 @@ module colourArbiterFSM (R, Clock, Resetn, y_Q, y_D, Output);
 		// FSM OUTPUTS
 		always @ (*) begin
 			Output = 4'b0000; // 4 bits to work with seg7Hex
-			if (y_Q == Black) Output = 4'b0000;
-			if (y_Q == Red) Output = 4'b0001;
-			if (y_Q == Blue) Output = 4'b0010;
-			if (y_Q == Green) Output = 4'b0011;
-			if (y_Q == White) Output = 4'b0100;
+			if (y_Q == Black) Output = 4'b0000; // 1 ON THE HEX DISPLAY
+			if (y_Q == Red) Output = 4'b0001; // 2 ON THE HEX DISPLAY
+			if (y_Q == Blue) Output = 4'b0010; // 3 ON THE HEX DISPLAY
+			if (y_Q == Green) Output = 4'b0011; // 4 ON THE HEX DISPLAY
+			if (y_Q == White) Output = 4'b0100; // 5 ON THE HEX DISPLAY
 		end
 	
 endmodule
