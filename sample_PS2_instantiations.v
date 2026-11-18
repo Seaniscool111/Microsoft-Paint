@@ -13,6 +13,9 @@ wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
 output [9:0] LEDR;
 output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0;
 
+inout PS2_CLK;
+inout PS2_DAT;
+
 // PS2 CONTROLLER WIRES
 wire [7:0] keyboard_data; // 8 bit word output of the keyboard
 wire [7:0] mouse_data; // 8 bit word output of the mouse
@@ -29,8 +32,8 @@ PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
     .the_command(), // optional, leave bracket blank
     .send_command(), // optional, leave bracket blank
 
-    .PS2_CLK(), //PIN_AD7
-    .PS2_DAT(), // PIN_AE7
+    .PS2_CLK(PS2_CLK), //PIN_AD7
+    .PS2_DAT(PS2_DAT), // PIN_AE7
 
     //outputs
 
@@ -48,8 +51,8 @@ PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .the_command(), // optional, leave bracket blank
     .send_command(), // optional, leave bracket blank
 
-    .PS2_CLK(), //PIN_AD7
-    .PS2_DAT(), // PIN_AE7
+    .PS2_CLK(PS2_CLK), //PIN_AD7
+    .PS2_DAT(PS2_DAT), // PIN_AE7
 
     //outputs
 
@@ -142,7 +145,7 @@ always @ (posedge CLOCK_50) begin
 			endcase
 		end
 
-		
+
 	end
 end
 
