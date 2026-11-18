@@ -1,17 +1,28 @@
-module sample_PS2_instantiations (
+module sample_PS2_instantiations ( // top level module, main
 	CLOCK_50;
-
+	SW,
+	LEDR,
+	HEX5, HEX4, HEX3, HEX2, HEX1, HEX0;
 );
 
+// INPUT OUTPUTS
 input CLOCK_50; // will drive all the clocks
-input reset; // THIS IS AN ACTIVE HIGH RESET FOR PS2
-wire [7:0] data_bus; // 8 bit word output of the ps2 controller
-wire data_bus_en; // 
+input [9:0] SW;
+wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
+
+output [9:0] LEDR;
+output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0;
+
+// PS2 CONTROLLER WIRES
+wire [7:0] keyboard_data; // 8 bit word output of the keyboard
+wire [7:0] mouse_data; // 8 bit word output of the mouse
+wire keyboard_data_en; // valid keyboard signal
+wire mouse_data_en; // valid mouse signal
 
 // ===============================================
 // 			MODULE INSTANTIATIONS
 // ==========================================
-PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 1) ( // CHECK SYNTAX 
+PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 0) ( // KEYBOARD
     .CLOCK50(CLOCK_50),
     .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
@@ -26,133 +37,72 @@ PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 1) ( // CHECK SYNTAX
     .command_was_sent(), // optional, leave bracket blank
     .error_communication_timed_out.(), // optional, leave bracket blank
 
-    .received_data(data_bus), // last data received from the PS/2 bus. 8 bit word
-    .received_data_en(data_bus_en) // new data signal. driven high for one clock cycle when receieved_data changes
+    .received_data(keyboard_data), // last data received from the PS/2 bus. 8 bit word
+    .received_data_en(keyboard_data_en) // new data signal. driven high for one clock cycle when receieved_data changes
 )
 
-Altera_UP_PS2_Data_In DI ( //accepts incoming data FROM ps2 core
-	// Inputs
-	.clk(CLOCK_50),
-	.reset(reset),
+PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 1) ( // MOUSE
+    .CLOCK50(CLOCK_50),
+    .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
-	.wait_for_incoming_data(),
-	.start_receiving_data(),
+    .the_command(), // optional, leave bracket blank
+    .send_command(), // optional, leave bracket blank
 
-	.ps2_clk_posedge(),
-	.ps2_clk_negedge(),
-	.ps2_data(),
+    .PS2_CLK(), //PIN_AD7
+    .PS2_DAT(), // PIN_AE7
 
-	// Bidirectionals
+    //outputs
 
-	// Outputs
-	.received_data(),
-	.received_data_en()			// If 1 - new data has been received
-);
+    .command_was_sent(), // optional, leave bracket blank
+    .error_communication_timed_out.(), // optional, leave bracket blank
 
-Altera_UP_PS2_Command_Out CO (
-	// Inputs
-	.clk(CLOCK_50),
-	.reset(reset),
+    .received_data(mouse_data), // last data received from the PS/2 bus. 8 bit word
+    .received_data_en(mouse_data_en) // new data signal. driven high for one clock cycle when receieved_data changes
+)
 
-	.the_command(),
-	.send_command(),
+// ============== REGISTERS FOR KEYBOARD ================
+reg [7:0] key; // stores the 8 bit hex code of the key being pressed -- REFER TO keyboard_codes
+reg key_released; // "Break"
+reg special_key_received; // for arrow up and down
 
-	.ps2_clk_posedge(),
-	.ps2_clk_negedge(),
+// ======= register to hold the last valid scan code =========
+always @ (posedge CLOCK_50) begin 
+	if (reset) begin
+		key <= 8'b0; 
+		key_released <= 1'b0; 
+		special_key_received <= 1'b0;
+	end
+	
+	else if (keyboard_data_en) begin // data received from PS2 controller module
+		if (keyboard_data == 8'hE0) begin // special key detected and received
+			special_key_received <= 1'b1; // special key has been received 
+		end 
+		else if (keyboard_data == 8'hF0) begin // key detected and received
+			key_released <= 1'b1; // key had been released
+		end 
+		
+		else begin // MAKE CODE -- KEY IS BEING PRESSED -- we are RECEIVING
+			if (special_key_received) begin // key is either arrow up or down
+				if (keyboard_data == 8'h75) begin // ARROW UP
+					key <= 8'hAA; // arrow up by our conventions			
+				end 
+				
+				else if (keyboard_data == 8'h72) begin
+					key <= 8'hDD; // arrow down by our conventions
+				end
+				special_key_received <= 1'b0;
+			end 
+			
+			else begin
+				key <= keyboard_data;
+			end 
 
-	// Bidirectionals
-	.PS2_CLK(),
- 	.PS2_DAT(),
+			key_released <= 1'b0; // key has not been released yet
+		end		
+	end
+end
 
-	// Outputs
-	.command_was_sent(),
-	.error_communication_timed_out()
-);
+assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
+
 
 endmodule
-
-/*****************************************************************************
- *                                                                           *
- * Module:       Altera_UP_PS2                                               *
- * Description:                                                              *
- *      This module communicates with the PS2 core.                          *
- *                                                                           *
- *****************************************************************************/
-
-module PS2_Controller #(parameter INITIALIZE_MOUSE = 0) (
-	// Inputs
-	CLOCK_50,
-	reset,
-
-	the_command,
-	send_command,
-
-	// Bidirectionals
-	PS2_CLK,					// PS2 Clock
- 	PS2_DAT,					// PS2 Data
-
-	// Outputs
-	command_was_sent,
-	error_communication_timed_out,
-
-	received_data,
-	received_data_en			// If 1 - new data has been received
-);
-
-
-/*****************************************************************************
- *                                                                           *
- * Module:       Altera_UP_PS2_Data_In                                       *
- * Description:                                                              *
- *      This module accepts incoming data from a PS2 core.                   *
- *                                                                           *
- *****************************************************************************/
-
-
-module Altera_UP_PS2_Data_In (
-	// Inputs
-	clk,
-	reset,
-
-	wait_for_incoming_data,
-	start_receiving_data,
-
-	ps2_clk_posedge,
-	ps2_clk_negedge,
-	ps2_data,
-
-	// Bidirectionals
-
-	// Outputs
-	received_data,
-	received_data_en			// If 1 - new data has been received
-);
-
-/*****************************************************************************
- *                                                                           *
- * Module:       Altera_UP_PS2_Command_Out                                   *
- * Description:                                                              *
- *      This module sends commands out to the PS2 core.                      *
- *                                                                           *
- *****************************************************************************/
-
-
-module Altera_UP_PS2_Command_Out (
-	// Inputs
-	clk,
-	reset,
-
-	the_command,
-	send_command,
-
-	ps2_clk_posedge,
-	ps2_clk_negedge,
-
-	// Bidirectionals
-	PS2_CLK,
- 	PS2_DAT,
-
-	// Outputs
-	command_was_sent,
-	error_communication_timed_out
-);
