@@ -1,8 +1,8 @@
 module sample_PS2_instantiations ( // top level module, main
-	CLOCK_50;
+	CLOCK_50,
 	SW,
 	LEDR,
-	HEX5, HEX4, HEX3, HEX2, HEX1, HEX0;
+	HEX5, HEX4, HEX3, HEX2, HEX1, HEX0
 );
 
 // INPUT OUTPUTS
@@ -22,7 +22,7 @@ wire mouse_data_en; // valid mouse signal
 // ===============================================
 // 			MODULE INSTANTIATIONS
 // ==========================================
-PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 0) ( // KEYBOARD
+PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
     .CLOCK50(CLOCK_50),
     .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
@@ -35,13 +35,13 @@ PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 0) ( // KEYBOARD
     //outputs
 
     .command_was_sent(), // optional, leave bracket blank
-    .error_communication_timed_out.(), // optional, leave bracket blank
+    .error_communication_timed_out(), // optional, leave bracket blank
 
     .received_data(keyboard_data), // last data received from the PS/2 bus. 8 bit word
     .received_data_en(keyboard_data_en) // new data signal. driven high for one clock cycle when receieved_data changes
-)
+);
 
-PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 1) ( // MOUSE
+PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .CLOCK50(CLOCK_50),
     .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
@@ -54,11 +54,11 @@ PS2_Controller PS2 #(parameter INITIALIZE_MOUSE = 1) ( // MOUSE
     //outputs
 
     .command_was_sent(), // optional, leave bracket blank
-    .error_communication_timed_out.(), // optional, leave bracket blank
+    .error_communication_timed_out(), // optional, leave bracket blank
 
     .received_data(mouse_data), // last data received from the PS/2 bus. 8 bit word
     .received_data_en(mouse_data_en) // new data signal. driven high for one clock cycle when receieved_data changes
-)
+);
 
 // ============== REGISTERS FOR KEYBOARD ================
 reg [7:0] key; // stores the 8 bit hex code of the key being pressed -- REFER TO keyboard_codes
@@ -119,23 +119,30 @@ always @ (posedge CLOCK_50) begin
 		mouse_packet_received <= 1'b0;
 	end
 
-	else if (mouse_data_en) begin // data received from PS2 controller
-		case (byte_index)
-			2'b00: begin // status and buttons
-				status_buttons <= mouse_data;
-				byte_index <= 2'b01; // mouse will now send x_movement 
-			end
+	else begin
+		mouse_packet_received <= 1'b0;
 
-			2'b01: begin // x_movement
-				y_movement <= mouse_data;
-				byte_index <= 2'b10; // mouse will now send y_movement
-			end
+		if (mouse_data_en) begin // data received from PS2 controller
+			case (byte_index)
+				2'b00: begin // status and buttons
+					status_buttons <= mouse_data;
+					byte_index <= 2'b01; // mouse will now send x_movement 
+				end
 
-			2'b10: begin // y_movement
-				x_movement <= mouse_data;
-				mouse_packet_received <= 1'b1; // done
-			end
-		endcase
+				2'b01: begin // x_movement
+					x_movement <= mouse_data;
+					byte_index <= 2'b10; // mouse will now send y_movement
+				end
+
+				2'b10: begin // y_movement
+					y_movement <= mouse_data;
+					mouse_packet_received <= 1'b1; // done
+					byte_index <= 2'b00;
+				end
+			endcase
+		end
+
+		
 	end
 end
 
@@ -148,7 +155,7 @@ wire signed [10:0] delta_x;
 wire signed [10:0] delta_y;
 
 assign delta_x = x_sign ? {3'b111, x_movement} : {3'b000, x_movement};
-assign delta_y = x_sign ? {3'b111, y_movement} : {3'b000, y_movement};
+assign delta_y = y_sign ? {3'b111, y_movement} : {3'b000, y_movement};
 
 always @ (posedge CLOCK_50) begin
 	if (reset) begin
