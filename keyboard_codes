@@ -1,0 +1,33 @@
+========== KEYBOARD TO HOST CODES ==============
+
+TOOLS SWITCHING
+
+KEY - TOOL - HEXCODE
+1 - BRUSH - 16
+2 - ERASE - 1E
+3 - LINE - 26
+4 - PAINT BUCKET - 25
+
+COLOURS SWITCHING - NUMPAD
+
+KEY - COLOUR - HEXCODE
+1 - BLACK - 69
+2 - RED - 72
+3 - BLUE - 7A
+4 - GREEN - 6B
+5 - WHITE - 73
+
+PEN SIZE 
+
+ARROWUP - INCREASE SIZE - E075
+ARROWDOWN - DECREASE SIZE - E072
+
+=========== HOST TO KEYBOARD COMMAND ===========
+FA = ACK (acknowledge) (keyboard to host)
+
+HEXCODE --------------- FUNCTIONALITY
+F4                      Keyboard Enable: clears output buffer, enables keyboard, returns ACK
+                                        keycodes will be transmitted !!
+F5                      Keyboard Disable: resets keyboard, disables keyboard, returns ACK
+                                        keycodes will NOT be transmitted !!
+
