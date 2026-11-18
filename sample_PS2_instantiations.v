@@ -102,7 +102,78 @@ always @ (posedge CLOCK_50) begin
 	end
 end
 
+// WIRES FOR USE WITH REST OF THE MODULE 
+wire [7:0] key_pressed = key;
+
+// =============== REGISTERS FOR MOUSE ==========
+reg [7:0] y_movement, x_movement, status_buttons; 
+reg [1:0] byte_index;
+reg mouse_packet_received;
+
+always @ (posedge CLOCK_50) begin
+	if (reset) begin
+		byte_index <= 2'b00;
+		y_movement <= 8'b0;
+		x_movement <= 8'b0;
+		status_buttons <= 8'b0;
+		mouse_packet_received <= 1'b0;
+	end
+
+	else if (mouse_data_en) begin // data received from PS2 controller
+		case (byte_index)
+			2'b00: begin // status and buttons
+				status_buttons <= mouse_data;
+				byte_index <= 2'b01; // mouse will now send x_movement 
+			end
+
+			2'b01: begin // x_movement
+				y_movement <= mouse_data;
+				byte_index <= 2'b10; // mouse will now send y_movement
+			end
+
+			2'b10: begin // y_movement
+				x_movement <= mouse_data;
+				mouse_packet_received <= 1'b1; // done
+			end
+		endcase
+	end
+end
+
+// TRANSLATING TO POSITION
+reg [9:0] cursor_x;
+reg [9:0] cursor_y;
+wire x_sign = status_buttons[4];
+wire y_sign = status_buttons[5];
+wire signed [10:0] delta_x;
+wire signed [10:0] delta_y;
+
+assign delta_x = x_sign ? {3'b111, x_movement} : {3'b000, x_movement};
+assign delta_y = x_sign ? {3'b111, y_movement} : {3'b000, y_movement};
+
+always @ (posedge CLOCK_50) begin
+	if (reset) begin
+		cursor_x <= 10'd320; // middle of the screen
+		cursor_y <= 10'd240;
+	end
+
+	else if (mouse_packet_received) begin
+		cursor_x <= cursor_x + delta_x;
+
+		cursor_y <= cursor_y + delta_y;
+	end
+end
+
+// WIRES FOR USE WITH REST OF MODULE
+wire left_click = status_buttons[0];
+wire right_click = status_buttons[1];
+wire middle_click = status_buttons[2];
+wire [9:0] x_position = cursor_x;
+wire [9:0] y_position = cursor_y;
+
+// =========== TESTING MODULES ==============
 assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
+assign LEDR[8] = right_click;
+assign LEDR[9] = left_click;
 
 
 endmodule
