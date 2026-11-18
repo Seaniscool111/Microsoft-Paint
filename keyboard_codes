@@ -1,3 +1,21 @@
+=============== WIRES TO BE USED WITH THE REST OF THE PROJECT =======================
+
+mouse:
+wire left_click: 1 if left mouse button was clicked, 0 otherwise
+wire right_click: 1 if right mouse button was clicked, 0 otherwise
+wire middle_click: 1 if middle mouse button was clicked, 0 otherwise
+
+wire [9:0] x_position: 10 bit value holding current x position on the VGA display
+wire [9:0] y_position: 10 bit value holding current y position on the VGA display
+
+ex. if (x_position == 10'd320) and (y_position == 10'd240), then you are in the MIDDLE 
+of the VGA display (640x480 pixel resolution)
+
+keyboard:
+wire [7:0] key_pressed: 8 bit hexadecimal value holding the character code of the key key_pressed
+
+ex. if (key_pressed == 8'h1E), then TOOL should be ERASE 
+
 ========== KEYBOARD TO HOST CODES ==============
 
 TOOLS SWITCHING
