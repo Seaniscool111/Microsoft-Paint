@@ -140,7 +140,7 @@ always @ (posedge CLOCK_50) begin
 end
 
 // TRANSLATING TO POSITION
-reg [9:0] cursor_x;
+reg [9:0] cursor_x; // 10 digits to hold 640
 reg [9:0] cursor_y;
 wire x_sign = status_buttons[4];
 wire y_sign = status_buttons[5];
@@ -157,9 +157,44 @@ always @ (posedge CLOCK_50) begin
 	end
 
 	else if (mouse_packet_received) begin
-		cursor_x <= cursor_x + delta_x;
 
-		cursor_y <= cursor_y + delta_y;
+		// X POSITION
+		if (!x_sign) begin // moving right
+			if (cursor_x + delta_x < 10'd640) begin
+				cursor_x <= cursor_x + delta_x;
+			end
+
+			else begin
+				cursor_x <= 10'd639;
+			end
+		end else begin // moving left
+			if (cursor_x > delta_x[9:0]) begin
+				cursor_x <= cursor_x - delta_x[9:0]; // subtract positive magnitude of delta x
+			end
+
+			else begin
+				cursor_x <= 10'd0;
+			end
+		end
+
+		// Y POSITION
+		if (!y_sign) begin // moving down
+			if (cursor_y + delta_y < 10'd480) begin
+				cursor_y <= cursor_y + delta_y;
+			end
+
+			else begin
+				cursor_y <= 10'd479;
+			end
+		end else begin // moving up
+			if (cursor_y > delta_y[9:0]) begin
+				cursor_y <= cursor_y - delta_y[9:0]; // subtract positive magnitude of delta y
+			end
+
+			else begin
+				cursor_y <= 10'd0;
+			end
+		end
 	end
 end
 
