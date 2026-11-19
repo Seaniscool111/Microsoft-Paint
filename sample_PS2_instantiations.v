@@ -2,6 +2,8 @@ module sample_PS2_instantiations ( // top level module, main
 	CLOCK_50,
 	SW,
 	LEDR,
+	PS2_CLK,
+	PS2_DAT,
 	HEX5, HEX4, HEX3, HEX2, HEX1, HEX0
 );
 
@@ -26,7 +28,7 @@ wire mouse_data_en; // valid mouse signal
 // 			MODULE INSTANTIATIONS
 // ==========================================
 PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
-    .CLOCK50(CLOCK_50),
+    .CLOCK_50(CLOCK_50),
     .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
     .the_command(), // optional, leave bracket blank
@@ -45,7 +47,7 @@ PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
 );
 
 PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
-    .CLOCK50(CLOCK_50),
+    .CLOCK_50(CLOCK_50),
     .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
     .the_command(), // optional, leave bracket blank
@@ -220,5 +222,47 @@ assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
 assign LEDR[8] = right_click;
 assign LEDR[9] = left_click;
 
+wire [3:0] s = {2'b00, x_position[9:8]};
+seg7Hex H5 (s, HEX5); 
+seg7Hex H4 (x_position[7:4], HEX4);
+seg7Hex H3 (x_position[3:0], HEX3);
+
+wire [3:0] t = {2'b00, y_position[9:8]};
+seg7Hex H2 (t, HEX2); 
+seg7Hex H1 (y_position[7:4], HEX1);
+seg7Hex H0 (y_position[3:0], HEX0);
+
 
 endmodule
+
+module seg7Hex (x, Display);
+    input [3:0] x; // input is a 4 bit hex
+    output reg [6:0] Display;
+    
+    // look at when each segment is on
+    
+    always @(*) begin
+        case(x)
+        // 4 bit hex, then display will show:
+        4'h0: Display = 7'b1000000;
+        4'h1: Display = 7'b1111001;
+        4'h2: Display = 7'b0100100;
+        4'h3: Display = 7'b0110000;
+        4'h4: Display = 7'b0011001;
+        4'h5: Display = 7'b0010010;
+        4'h6: Display = 7'b0000010;
+        4'h7: Display = 7'b1111000;
+        4'h8: Display = 7'b0000000;
+        4'h9: Display = 7'b0011000;
+        4'hA: Display = 7'b0001000;
+        4'hB: Display = 7'b0000011;
+        4'hC: Display = 7'b1000110;
+        4'hD: Display = 7'b0100001;
+        4'hE: Display = 7'b0000110;
+        4'hF: Display = 7'b0001110;
+        endcase
+    end
+endmodule
+
+
+
