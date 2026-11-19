@@ -4,22 +4,28 @@ module milestone1(SW, LEDR);
 	
 endmodule
 
-module pen_size (w, Clock, Resetn, LEDR, y_Q, y_D);
-	input w, Resetn;
+module pen_size (up, down Clock, Resetn, LEDR, y_Q, y_D);
+	input up, down, Resetn;
 	input Clock;
 	output [9:7] LEDR;
 	output reg y_Q, Y_D;
-	parameter A = 2'b00, B = 2'b01, C = 2'b10;
+	parameter size1 = 2'b00, size2 = 2'b01, size2 = 2'b10;
 	
 	always @ (*)
 		case (y_Q)
-			A: if (w = 1) Y_D = B;
-				else       Y_D = A;
-			B: if (w = 1) Y_D = C;
-				else       Y_D = A;
-			C: if (w = 1) Y_D = C;
-				else       Y_D = B;
-			default: Y_D = B;
+			size1: 	if 		(up == 1) 	Y_D = size2;
+					else if (down == 1) Y_D = size1;
+					else 				Y_D = size1;
+
+			size2: 	if 	(up == 1) 		Y_D = size3;
+				   	else (down == 1)    Y_D = size1;
+				   	else				Y_D = size2;
+
+			size3: 	if 		(up == 1) 	Y_D = size3;
+					else if (down == 1) Y_D = size2;
+					else 				Y_D = size3;
+
+			default: Y_D = size2;
 		endcase
 	
 	// ======== STATE FFS ============
@@ -32,20 +38,144 @@ module pen_size (w, Clock, Resetn, LEDR, y_Q, y_D);
  // ======== show pen size on the LEDR ==========	
 	always @ (*) begin
 		LEDR[9:7] = 3'b000;
-		if (y_Q == A) LEDR[9] = 1'b1;
-		if (y_Q == B) LEDR[8] = 1'b1;
-		if (y_Q == C) LEDR[7] = 1'b1;
+		if (y_Q == size1) LEDR[9] = 1'b1;
+		if (y_Q == size2) LEDR[8] = 1'b1;
+		if (y_Q == size3) LEDR[7] = 1'b1;
 	end
 		
 endmodule
 
+// =========== COLOUR FSM =============
+// will output the COLOUR TO BE WRITTEN TO THE VGA 
+module colourFSM (code, Clock, Resetn, y_Q, y_D, Colour);
+	input [6:0] code; // colour is an input thatis 7 bit binary correspnding to the key pressed
+	input Clock;
+	input Resetn;
+	reg y_Q; // current state
+	reg y_D; // next state
+	output reg [8:0] Colour; // outputs a 9 bit colour value that the vga will use
+						// 3 bits for r, g, and b
+	parameter: Black = 3'b000, Red = 3'b001, Blue = 3'b010, Green = 3'b011, White = 3'b100;
 
+	always @ (*) begin
+		case (code)
+			Black: 	if 		(code == 7'b1110010) 	y_D = Red;
+					else if (code == 7'b1111010) 	y_D = Blue;
+					else if (code == 7'b1101011) 	y_D = Green;
+					else if (code == 7'b1110011) 	y_D = White;
+					else 							y_D = Black;
+
+			Red: 	if 		(code == 7'b1111010) 	y_D = Blue;
+					else if (code == 7'b1101011) 	y_D = Green;
+					else if (code == 7'b1110011) 	y_D = White;
+					else if (code == 7'b1101001) 	y_D = Black;
+					else 							y_D = Red;
+
+			Blue: 	if 		(code == 7'b1101011) 	y_D = Green;
+					else if (code == 7'b1110011) 	y_D = White;
+					else if (code == 7'b1101001) 	y_D = Black;
+					else if (code == 7'b1110010) 	y_D = Red;
+					else 							y_D = Blue;
+
+			Green: 	if 		(code == 7'b1110011) 	y_D = White;
+					else if (code == 7'b1101001) 	y_D = Black;
+					else if (code == 7'b1110010) 	y_D = Red;
+					else if (code == 7'b1111010) 	y_D = Blue;
+					else 							y_D = Green;
+
+			White: 	if 		(code == 7'b1101001) 	y_D = Black;
+					else if (code == 7'b1110010) 	y_D = Red;
+					else if (code == 7'b1111010) 	y_D = Blue;
+					else if (code == 7'b1101011) 	y_D = Green;
+					else 							y_D = White;
+			default: Y_D = White;
+		endcase
+	end
+
+	// state ffs
+	always @ (posedge Clock) begin
+		if (!Resetn) begin
+			y_Q <= White; // by default
+		end
+		else begin
+			y_Q <= y_D;
+		end
+	end
+
+	// fsm outputs
+	always @ (*) begin
+		Colour = 9'b111_111_111; // white by default
+		if (y_Q == Black) Colour = 9'b000_000_000;
+		if (y_Q == Red) Colour = 9'b111_000_000;
+		if (y_Q == Blue) Colour = 9'b000_000_111;
+		if (y_Q == Green) Colour = 9'b000_111_000;
+		if (y_Q == White) Colour = 9'111_111_111;
+	end
+
+endmodule
+
+// =========== TOOL FSMS ==============
+module toolFSM (code, Clock, Resetn, y_Q, Y_D, Tool);
+	input [5:0] code; // up to 6 bits needed for tool codes
+	input Clock;
+	input Resetn;
+	reg y_Q;
+	reg Y_D;
+	output reg [3:0] Tool; // BIT 0 = BRUSH, BIT 1 = ERASE, BIT 2 = LINE, BIT 3 = PAINT
+	parameter: Brush = 2'b00, Erase = 2'b01, Line = 2'b10, Paint_Bucket = 2'b11;
+
+	always @ (*) begin
+		case (code)
+			Brush: 	if 		(code == 6'b011110) Y_D = Erase;
+					else if (code == 6'b100110) Y_D = Line;
+					else if (code == 6'b100101) Y_D = Paint_Bucket;
+					else 						Y_D = Brush;
+					
+			Erase: 	if 		(code == 6'b100110) Y_D = Line;
+					else if (code == 6'b100101) Y_D = Paint_Bucket;
+					else if (code == 6'b010110) Y_D = Brush;
+					else 						Y_D = Erase;	
+
+			Line: 	if 		(code == 6'b100101) Y_D = Paint_Bucket;
+					else if (code == 6'b010110) Y_D = Brush;
+					else if (code == 6'b011110) Y_D = Erase;
+					else 						Y_D = Line;	
+
+			Paint_Bucket: if 	(code == 6'b010110) Y_D = Brush;
+						else if (code == 6'b011110) Y_D = Erase;
+						else if (code == 6'b100110) Y_D = Line;
+						else 						Y_D = Paint_Bucket;	
+			default: Y_D = Brush;		
+		endcase
+	end
+
+	// state ffs
+	always @ (posedge Clock) begin
+		if (Resetn) begin
+			y_Q <= Brush;
+		end
+		else begin
+			y_Q <= Y_D;
+		end
+	end
+
+	// assign fsm outputs
+	always @ (*) begin
+		Tool = 4'b0001;
+		if (y_Q == Brush) 			Tool = 4'b0001;
+		if (y_Q == Erase) 			Tool = 4'b0010;
+		if (y_Q == Line) 			Tool = 4'b0100;
+		if (y_Q == Paint_Bucket) 	Tool = 4'b1000;
+	end
+endmodule
+
+// COLOURARBRITER SHOULD FOLLOW THE SAME LOGIC AS TOOLS FSM
 module colourArbiterFSM (R, Clock, Resetn, y_Q, y_D, Output);
 	input [4:0] R; // 5 request signals
 	input Clock;
 	input Resetn;
 	output reg y_Q, Y_D;
-	output [3:0] Output;
+	output reg [3:0] Output;
 	parameter: Black = 3'b000, Red = 3'b001, Blue = 3'b010, Green = 3'b011, White = 3'b100;
 	
 	always @ (*)
