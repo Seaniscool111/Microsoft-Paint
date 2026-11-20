@@ -1,82 +1,68 @@
-module sample_pen_size_instantiations(SW, LEDR, KEY, CLOCK_50);
-    input [9:0] SW;
-    input CLOCK_50;
-    output [9:7] LEDR;
-    input [1:0] KEY;
+// =========== COLOUR FSM =============
+// will output the COLOUR TO BE WRITTEN TO THE VGA 
+module test_colour_fsm (code, Clock, Resetn, Colour);
+	input [6:0] code; // colour is an input thatis 7 bit binary correspnding to the key pressed
+	input Clock;
+	input Resetn;
+	reg [2:0] y_Q; // current state
+	reg [2:0] y_D; // next state
+	output reg [8:0] Colour; // outputs a 9 bit colour value that the vga will use
+						// 3 bits for r, g, and b
+	parameter Black = 3'b000, Red = 3'b001, Blue = 3'b010, Green = 3'b011, White = 3'b100;
 
-	 wire [2:0] z;
+	always @ (*) begin
+		case (code)
+			Black: 	if 		(code == 7'b1110010) 	y_D = Red;
+					else if (code == 7'b1111010) 	y_D = Blue;
+					else if (code == 7'b1101011) 	y_D = Green;
+					else if (code == 7'b1110011) 	y_D = White;
+					else 							y_D = Black;
 
-    pen_size P1 (
-        .up(KEY[0]),
-        .down(KEY[1]),
-        .Clock(CLOCK_50),
-        .Resetn(SW[0]),
-        .z(z)
-    );
-	 
-	assign LEDR[9:7] = z[2:0];
-   
+			Red: 	if 		(code == 7'b1111010) 	y_D = Blue;
+					else if (code == 7'b1101011) 	y_D = Green;
+					else if (code == 7'b1110011) 	y_D = White;
+					else if (code == 7'b1101001) 	y_D = Black;
+					else 							y_D = Red;
+
+			Blue: 	if 		(code == 7'b1101011) 	y_D = Green;
+					else if (code == 7'b1110011) 	y_D = White;
+					else if (code == 7'b1101001) 	y_D = Black;
+					else if (code == 7'b1110010) 	y_D = Red;
+					else 							y_D = Blue;
+
+			Green: 	if 		(code == 7'b1110011) 	y_D = White;
+					else if (code == 7'b1101001) 	y_D = Black;
+					else if (code == 7'b1110010) 	y_D = Red;
+					else if (code == 7'b1111010) 	y_D = Blue;
+					else 							y_D = Green;
+
+			White: 	if 		(code == 7'b1101001) 	y_D = Black;
+					else if (code == 7'b1110010) 	y_D = Red;
+					else if (code == 7'b1111010) 	y_D = Blue;
+					else if (code == 7'b1101011) 	y_D = Green;
+					else 							y_D = White;
+			default: y_D = White;
+		endcase
+	end
+
+	// state ffs
+	always @ (posedge Clock) begin
+		if (!Resetn) begin
+			y_Q <= White; // by default
+		end
+		else begin
+			y_Q <= y_D;
+		end
+	end
+
+	// fsm outputs
+	always @ (*) begin
+		Colour = 9'b111_111_111; // white by default
+		if (y_Q == Black) Colour = 9'b000_000_000;
+		if (y_Q == Red) Colour = 9'b111_000_000;
+		if (y_Q == Blue) Colour = 9'b000_000_111;
+		if (y_Q == Green) Colour = 9'b000_111_000;
+		if (y_Q == White) Colour = 9'b111_111_111;
+	end
+
 endmodule
-
-module pen_size (up, down, Clock, Resetn, z);
-    input up, down, Resetn;
-    input Clock;
-    output reg [2:0] z;
-    reg [1:0] y_Q, Y_D;
-    parameter size1 = 2'b00, size2 = 2'b01, size3 = 2'b10;
-	 
-	 reg up_prev, down_prev;
-    wire up_press, down_press;
-
-
-    // Detect active-low button press (1 -> 0)
-    always @(posedge Clock) begin
-        if (!Resetn) begin
-            up_prev   <= 1'b1;
-            down_prev <= 1'b1;
-        end else begin
-            up_prev   <= up;
-            down_prev <= down;
-        end
-    end
-
-    assign up_press   = (up_prev == 1'b1) && (up == 1'b0);
-    assign down_press = (down_prev == 1'b1) && (down == 1'b0);
-   
-    always @ (*)
-        case (y_Q)
-            size1:  if      (up_press == 1)   Y_D = size2;
-                    else if (down_press == 1) Y_D = size1;
-                    else                Y_D = size1;
-
-
-            size2:  if  (up_press == 1)       Y_D = size3;
-                    else if (down_press == 1)    Y_D = size1;
-                    else                Y_D = size2;
-
-
-            size3:  if      (up_press == 1)   Y_D = size3;
-                    else if (down_press == 1) Y_D = size2;
-                    else                Y_D = size3;
-
-
-            default: Y_D = size2;
-        endcase
-   
-    // ======== STATE FFS ============
-    always @ (posedge Clock)
-        if (!Resetn)
-            y_Q <= size2;
-        else
-            y_Q <= Y_D;
-   
- // ======== show pen size on the LEDR ==========  
-    always @ (*) begin
-        z[2:0] = 3'b000;
-        if (y_Q == size1) z[2] = 1'b1;
-        if (y_Q == size2) z[1] = 1'b1;
-        if (y_Q == size3) z[0] = 1'b1;
-    end
-       
-endmodule
-
