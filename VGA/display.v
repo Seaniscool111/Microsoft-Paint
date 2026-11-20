@@ -7,17 +7,13 @@ module display(CLOCK_50, SW, KEY, mouse_x, mouse_y, mouse_click, Color, VGA_X, V
 	input [8:0] mouse_y;			// Y-coord input from PS/2
 	input mouse_click;			// Enable for drawing
 	input [3:0] Color;
-	
-	
+
 	output [9:0] VGA_X;
 	output [8:0] VGA_Y;
 	output [23:0] VGA_COLOR;
 	output plot;
-	
 
 	wire vga_sync;
-	
-	
 	
 	vga_adapter A (
 		.clock(CLOCK_50),
