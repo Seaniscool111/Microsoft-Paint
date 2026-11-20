@@ -4,7 +4,7 @@ module test_pen_size(SW, LEDR, KEY, CLOCK_50);
     output [9:7] LEDR;
     input [1:0] KEY;
 
-	 wire [2:0] z;
+	wire [2:0] z;
 
     pen_size P1 (
         .up(KEY[0]),
