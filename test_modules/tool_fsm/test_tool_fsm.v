@@ -35,7 +35,7 @@ module test_tool_fsm (code, Clock, Resetn, Tool);
 
 	// state ffs
 	always @ (posedge Clock) begin
-		if (Resetn) begin
+		if (!Resetn) begin
 			y_Q <= Brush;
 		end
 		else begin
