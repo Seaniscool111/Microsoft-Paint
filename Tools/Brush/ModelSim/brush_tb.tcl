@@ -15,14 +15,7 @@ vlog *brush_tb.v
 vsim work.brush_tb -Lf 220model -Lf altera_mf_ver -Lf verilog
 
 # Add all signals to the waveform automatically (if you don't have a wave.do yet)
-add wave /brush_tb/clk
-add wave /brush_tb/go
-add wave -radix unsigned /brush_tb/size
-add wave /brush_tb/UUT/y_Q
-add wave /brush_tb/UUT/Y_D
-add wave -radix unsigned /brush_tb/UUT/xc
-add wave -radix unsigned /brush_tb/UUT/yc
-add wave /brush_tb/write
+do wave.do
 
 # Run long enough to see multiple clock cycles (20ns per cycle)
 run 500 ns
