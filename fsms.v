@@ -8,7 +8,7 @@ module pen_size (up, down Clock, Resetn, LEDR, y_Q, y_D);
 	input up, down, Resetn;
 	input Clock;
 	output [9:7] LEDR;
-	output reg y_Q, Y_D;
+	reg [1:0] y_Q, Y_D;
 	parameter size1 = 2'b00, size2 = 2'b01, size2 = 2'b10;
 	
 	always @ (*)
@@ -51,8 +51,8 @@ module colourFSM (code, Clock, Resetn, y_Q, y_D, Colour);
 	input [6:0] code; // colour is an input thatis 7 bit binary correspnding to the key pressed
 	input Clock;
 	input Resetn;
-	reg y_Q; // current state
-	reg y_D; // next state
+	reg [2:0] y_Q; // current state
+	reg [2:0] y_D; // next state
 	output reg [8:0] Colour; // outputs a 9 bit colour value that the vga will use
 						// 3 bits for r, g, and b
 	parameter: Black = 3'b000, Red = 3'b001, Blue = 3'b010, Green = 3'b011, White = 3'b100;
