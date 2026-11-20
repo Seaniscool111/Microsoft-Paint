@@ -41,14 +41,14 @@ module colour_FSM (code, Clock, Resetn, y_Q, y_D, Colour);
 					else if (code == 7'b1111010) 	y_D = Blue;
 					else if (code == 7'b1101011) 	y_D = Green;
 					else 							y_D = White;
-			default: Y_D = White;
+			default: Y_D = Black;
 		endcase
 	end
 
 	// state ffs
 	always @ (posedge Clock) begin
 		if (!Resetn) begin
-			y_Q <= White; // by default
+			y_Q <= Black; // by default
 		end
 		else begin
 			y_Q <= y_D;
@@ -57,7 +57,7 @@ module colour_FSM (code, Clock, Resetn, y_Q, y_D, Colour);
 
 	// fsm outputs
 	always @ (*) begin
-		Colour = 9'b111_111_111; // white by default
+		Colour = 9'111_111_111; // black by default
 		if (y_Q == Black) Colour = 9'b000_000_000;
 		if (y_Q == Red) Colour = 9'b111_000_000;
 		if (y_Q == Blue) Colour = 9'b000_000_111;
