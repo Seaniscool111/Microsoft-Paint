@@ -2,15 +2,20 @@
 quit -sim
 
 # create the default "work" library
-vlib work;
+vlib work
 
-# compile the Verilog source code in the parent folder
-vlog ../display.v
-# compile the Verilog code of the testbench
+# Compile all Verilog files in the parent folder and the vga_adapter subfolder
+vlog ../*.v
+vlog ../vga_adapter/*.v
+
+# Compile the testbench in the current ModelSim folder
 vlog *.v
-# start the Simulator, including some libraries that may be needed
+
+# Start simulation 
 vsim work.display_tb -Lf 220model -Lf altera_mf_ver -Lf verilog
-# show waveforms specified in wave.do
-do wave.do
-# advance the simulation the desired amount of time
-run 200 ns
+
+# Add all signals to the waveform automatically (if you don't have a wave.do yet)
+add wave -r /*
+
+# Run long enough to see multiple clock cycles (20ns per cycle)
+run 500 ns

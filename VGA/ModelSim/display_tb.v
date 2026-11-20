@@ -2,15 +2,15 @@
 
 module display_tb();
 
-    parameter CLOCK_PERIOD = 20; // 50 MHz clock has a 20ns period
+   parameter CLOCK_PERIOD = 20; // 50 MHz clock has a 20ns period
 
-    reg [9:0] SW;
-    reg [3:0] KEY; // ON, OFF, RESET
-    reg CLOCK_50;
+   reg [9:0] SW;
+   reg [3:0] KEY; // ON, OFF, RESET
+   reg CLOCK_50;
     
 	 
-	 // Outputs
-	 wire [9:0] VGA_X;
+	// Outputs
+	wire [9:0] VGA_X;
 	wire [8:0] VGA_Y;
 	wire [23:0] VGA_COLOR;
 	wire plot;

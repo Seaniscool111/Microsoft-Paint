@@ -1,0 +1,10 @@
+
+
+C:/Coding/ECE241/project/paint_vga_display/vga_adapter/vga_pll.v
+
+Nov 20 09AM:26:16>: Error in CNX file format.
+
+Error messages are listed in file
+C:/Coding/ECE241/project/paint_vga_display/vga_adapter/vga_pll.cnxerr.
+
+Can't create the custom megafunction variation file(s)
