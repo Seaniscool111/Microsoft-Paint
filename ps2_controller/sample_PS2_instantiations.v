@@ -219,18 +219,18 @@ wire [9:0] y_position = cursor_y;
 
 // =========== TESTING MODULES ==============
 assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
-assign LEDR[8] = right_click;
-assign LEDR[9] = left_click;
+// assign LEDR[8] = right_click;
+// assign LEDR[9] = left_click;
 
-wire [3:0] s = {2'b00, x_position[9:8]};
-seg7Hex H5 (s, HEX5); 
-seg7Hex H4 (x_position[7:4], HEX4);
-seg7Hex H3 (x_position[3:0], HEX3);
+// wire [3:0] s = {2'b00, x_position[9:8]};
+// seg7Hex H5 (s, HEX5); 
+// seg7Hex H4 (x_position[7:4], HEX4);
+// seg7Hex H3 (x_position[3:0], HEX3);
 
-wire [3:0] t = {2'b00, y_position[9:8]};
-seg7Hex H2 (t, HEX2); 
-seg7Hex H1 (y_position[7:4], HEX1);
-seg7Hex H0 (y_position[3:0], HEX0);
+// wire [3:0] t = {2'b00, y_position[9:8]};
+// seg7Hex H2 (t, HEX2); 
+// seg7Hex H1 (y_position[7:4], HEX1);
+// seg7Hex H0 (y_position[3:0], HEX0);
 
 
 endmodule
