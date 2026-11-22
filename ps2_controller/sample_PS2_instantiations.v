@@ -9,8 +9,13 @@ module sample_PS2_instantiations ( // top level module, main
 
 // INPUT OUTPUTS
 input CLOCK_50; // will drive all the clocks
-input [9:0] SW;
+input [9:0] SW; // SW9 = MODE AMD SW 0 AND RESET
 wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
+wire mouse_mode = SW[9];
+wire keyboard_mode = ~SW[9];
+
+wire keyboard_reset = reset | mouse_mode;
+wire mouse_reset = reset | keyboard_reset;
 
 output [9:0] LEDR;
 output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0;
@@ -29,10 +34,10 @@ wire mouse_data_en; // valid mouse signal
 // ==========================================
 PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
     .CLOCK_50(CLOCK_50),
-    .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
+    .reset(mouse_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
-    .the_command(), // optional, leave bracket blank
-    .send_command(), // optional, leave bracket blank
+    .the_command(8'h00), // optional, leave bracket blank
+    .send_command(1'b0), // optional, leave bracket blank
 
     .PS2_CLK(PS2_CLK), //PIN_AD7
     .PS2_DAT(PS2_DAT), // PIN_AE7
@@ -48,10 +53,10 @@ PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
 
 PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .CLOCK_50(CLOCK_50),
-    .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
+    .reset(keyboard_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
-    .the_command(), // optional, leave bracket blank
-    .send_command(), // optional, leave bracket blank
+    .the_command(8'h00), // optional, leave bracket blank
+    .send_command(1'b0), // optional, leave bracket blank
 
     .PS2_CLK(PS2_CLK), //PIN_AD7
     .PS2_DAT(PS2_DAT), // PIN_AE7
@@ -119,7 +124,7 @@ always @ (posedge CLOCK_50) begin
 	if (reset) begin
 		byte_index <= 2'b00;
 		y_movement <= 8'b0;
-		x_movement <``= 8'b0;
+		x_movement <= 8'b0;
 		status_buttons <= 8'b0;
 		mouse_packet_received <= 1'b0;
 	end
