@@ -1,7 +1,7 @@
 // =========== COLOUR FSM =============
 // will output the COLOUR TO BE WRITTEN TO THE VGA 
-module colour_FSM (code, Clock, Resetn, y_Q, y_D, Colour);
-	input [6:0] code; // colour is an input thatis 7 bit binary correspnding to the key pressed
+module colour_FSM (code, Clock, Resetn, Colour);
+	input [6:0] code; // colour is an input that is 7 bit binary correspnding to the key pressed
 	input Clock;
 	input Resetn;
 	reg [2:0] y_Q; // current state
