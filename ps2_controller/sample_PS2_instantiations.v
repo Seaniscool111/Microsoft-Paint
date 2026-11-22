@@ -73,40 +73,21 @@ PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
 // ============== REGISTERS FOR KEYBOARD ================
 reg [7:0] key; // stores the 8 bit hex code of the key being pressed -- REFER TO keyboard_codes
 reg key_released; // "Break"
-reg special_key_received; // for arrow up and down
 
 // ======= register to hold the last valid scan code =========
 always @ (posedge CLOCK_50) begin 
 	if (reset) begin
 		key <= 8'b0; 
 		key_released <= 1'b0; 
-		special_key_received <= 1'b0;
 	end
 	
 	else if (keyboard_data_en) begin // data received from PS2 controller module
-		if (keyboard_data == 8'hE0) begin // special key detected and received
-			special_key_received <= 1'b1; // special key has been received 
-		end 
-		else if (keyboard_data == 8'hF0) begin // key detected and received
+		if (keyboard_data == 8'hF0) begin // key detected and received
 			key_released <= 1'b1; // key had been released
 		end 
 		
 		else begin // MAKE CODE -- KEY IS BEING PRESSED -- we are RECEIVING
-			if (special_key_received) begin // key is either arrow up or down
-				if (keyboard_data == 8'h75) begin // ARROW UP
-					key <= 8'hAA; // arrow up by our conventions			
-				end 
-				
-				else if (keyboard_data == 8'h72) begin
-					key <= 8'hDD; // arrow down by our conventions
-				end
-				special_key_received <= 1'b0;
-			end 
-			
-			else begin
-				key <= keyboard_data;
-			end 
-
+			key <= keyboard_data;
 			key_released <= 1'b0; // key has not been released yet
 		end		
 	end
@@ -151,8 +132,6 @@ always @ (posedge CLOCK_50) begin
 				end
 			endcase
 		end
-
-
 	end
 end
 
