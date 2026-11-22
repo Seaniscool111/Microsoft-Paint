@@ -8,7 +8,7 @@ module colour_FSM (code, Clock, Resetn, Colour);
 	reg [2:0] y_D; // next state
 	output reg [8:0] Colour; // outputs a 9 bit colour value that the vga will use
 						// 3 bits for r, g, and b
-	parameter: Black = 3'b000, Red = 3'b001, Blue = 3'b010, Green = 3'b011, White = 3'b100;
+	parameter Black = 3'b000, Red = 3'b001, Blue = 3'b010, Green = 3'b011, White = 3'b100;
 
 	always @ (*) begin
 		case (code)
@@ -41,7 +41,7 @@ module colour_FSM (code, Clock, Resetn, Colour);
 					else if (code == 8'b01111010) 	y_D = Blue;
 					else if (code == 8'b01101011) 	y_D = Green;
 					else 							y_D = White;
-			default: Y_D = Black;
+			default: y_D = Black;
 		endcase
 	end
 
@@ -57,12 +57,12 @@ module colour_FSM (code, Clock, Resetn, Colour);
 
 	// fsm outputs
 	always @ (*) begin
-		Colour = 9'111_111_111; // black by default
+		Colour = 9'b111_111_111; // black by default
 		if (y_Q == Black) Colour = 9'b000_000_000;
 		if (y_Q == Red) Colour = 9'b111_000_000;
 		if (y_Q == Blue) Colour = 9'b000_000_111;
 		if (y_Q == Green) Colour = 9'b000_111_000;
-		if (y_Q == White) Colour = 9'111_111_111;
+		if (y_Q == White) Colour = 9'b111_111_111;
 	end
 
 endmodule
