@@ -16,6 +16,10 @@ wire [7:0] key_pressed: 8 bit hexadecimal value holding the character code of th
 
 ex. if (key_pressed == 8'h1E), then TOOL should be ERASE 
 
+IMPORTANT:
+SW[9] = 1 --> MOUSE MODE
+SW[9] = 0 --> KEYBOARD MODE
+
 ========== KEYBOARD TO HOST CODES ==============
 
 TOOLS SWITCHING
