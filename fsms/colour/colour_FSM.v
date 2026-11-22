@@ -1,7 +1,7 @@
 // =========== COLOUR FSM =============
 // will output the COLOUR TO BE WRITTEN TO THE VGA 
 module colour_FSM (code, Clock, Resetn, Colour);
-	input [6:0] code; // colour is an input that is 7 bit binary correspnding to the key pressed
+	input [8:0] code; // colour is an input that is 8 bit binary correspnding to the key pressed
 	input Clock;
 	input Resetn;
 	reg [2:0] y_Q; // current state
@@ -12,34 +12,34 @@ module colour_FSM (code, Clock, Resetn, Colour);
 
 	always @ (*) begin
 		case (code)
-			Black: 	if 		(code == 7'b1110010) 	y_D = Red;
-					else if (code == 7'b1111010) 	y_D = Blue;
-					else if (code == 7'b1101011) 	y_D = Green;
-					else if (code == 7'b1110011) 	y_D = White;
+			Black: 	if 		(code == 8'b01110010) 	y_D = Red;
+					else if (code == 8'b01111010) 	y_D = Blue;
+					else if (code == 8'b01101011) 	y_D = Green;
+					else if (code == 8'b01110011) 	y_D = White;
 					else 							y_D = Black;
 
-			Red: 	if 		(code == 7'b1111010) 	y_D = Blue;
-					else if (code == 7'b1101011) 	y_D = Green;
-					else if (code == 7'b1110011) 	y_D = White;
-					else if (code == 7'b1101001) 	y_D = Black;
+			Red: 	if 		(code == 8'b01111010) 	y_D = Blue;
+					else if (code == 8'b01101011) 	y_D = Green;
+					else if (code == 8'b01110011) 	y_D = White;
+					else if (code == 8'b01101001) 	y_D = Black;
 					else 							y_D = Red;
 
-			Blue: 	if 		(code == 7'b1101011) 	y_D = Green;
-					else if (code == 7'b1110011) 	y_D = White;
-					else if (code == 7'b1101001) 	y_D = Black;
-					else if (code == 7'b1110010) 	y_D = Red;
+			Blue: 	if 		(code == 8'b01101011) 	y_D = Green;
+					else if (code == 8'b01110011) 	y_D = White;
+					else if (code == 8'b01101001) 	y_D = Black;
+					else if (code == 8'b01110010) 	y_D = Red;
 					else 							y_D = Blue;
 
-			Green: 	if 		(code == 7'b1110011) 	y_D = White;
-					else if (code == 7'b1101001) 	y_D = Black;
-					else if (code == 7'b1110010) 	y_D = Red;
-					else if (code == 7'b1111010) 	y_D = Blue;
+			Green: 	if 		(code == 8'b01110011) 	y_D = White;
+					else if (code == 8'b01101001) 	y_D = Black;
+					else if (code == 8'b01110010) 	y_D = Red;
+					else if (code == 8'b01111010) 	y_D = Blue;
 					else 							y_D = Green;
 
-			White: 	if 		(code == 7'b1101001) 	y_D = Black;
-					else if (code == 7'b1110010) 	y_D = Red;
-					else if (code == 7'b1111010) 	y_D = Blue;
-					else if (code == 7'b1101011) 	y_D = Green;
+			White: 	if 		(code == 8'b01101001) 	y_D = Black;
+					else if (code == 8'b01110010) 	y_D = Red;
+					else if (code == 8'b01111010) 	y_D = Blue;
+					else if (code == 8'b01101011) 	y_D = Green;
 					else 							y_D = White;
 			default: Y_D = Black;
 		endcase
