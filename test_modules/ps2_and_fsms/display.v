@@ -7,7 +7,7 @@ module display(
 	input mouse_click, 
 	// input [8:0] colour, 
 	output [7:0] VGA_R, VGA_G, VGA_B, 
-	output VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_CLK
+	output VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_CLK,
 	input [9:0] LEDR,
     output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
     inout PS2_CLK,
@@ -70,7 +70,7 @@ module display(
     colour_FSM C1 (
         .code(key_pressed),
         .Clock(CLOCK_50),
-        .Resetn(SW[0]), // check if this is not or not
+        .Resetn(!SW[0]), // check if this is not or not
         .Colour(colour)
     );
 
