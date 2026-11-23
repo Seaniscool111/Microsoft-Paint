@@ -1,7 +1,7 @@
 module ps2  ( // top level module, main
 	input CLOCK_50, // will drive all the clocks
 	input [9:0] SW, // SW9 = MODE AMD SW 0 AND RESET
-	input [9:0] LEDR,
+	output [9:0] LEDR,
 	inout PS2_CLK,
 	inout PS2_DAT,
 
@@ -9,7 +9,7 @@ module ps2  ( // top level module, main
     output [7:0] key_pressed, // 8 bit word output of the keyboard
 	
 	output right_click, // is mouse right clicking
-	output middle click, // is mouse middle clicking
+	output middle_click, // is mouse middle clicking
 	output left_click, // is mouse left clicking
 	output [9:0] x_position, // 10 bit x position --> holds up to decimal value 640
 	output [9:0] y_position // 10 bit y position --> hols up to decimal value 420 
@@ -20,7 +20,7 @@ wire mouse_mode = SW[9],
 wire keyboard_mode = ~SW[9],
 
 wire keyboard_reset = reset | mouse_mode;
-wire mouse_reset = reset | keyboard_reset;
+wire mouse_reset = reset | keyboard_mode;
 
 // PS2 CONTROLLER WIRES
 wire [7:0] keyboard_data; // 8 bit word output of the keyboard
@@ -93,7 +93,7 @@ always @ (posedge CLOCK_50) begin
 end
 
 // WIRES FOR USE WITH REST OF THE MODULE 
-wire [7:0] key_pressed = key;
+assign key_pressed = key;
 
 // =============== REGISTERS FOR MOUSE ==========
 reg [7:0] y_movement, x_movement, status_buttons; 
@@ -197,8 +197,8 @@ end
 assign left_click = status_buttons[0];
 assign right_click = status_buttons[1];
 assign middle_click = status_buttons[2];
-assign [9:0] x_position = cursor_x;
-assign [9:0] y_position = cursor_y;
+assign x_position = cursor_x;
+assign y_position = cursor_y;
 
 // =========== TESTING MODULES ==============
 // assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
