@@ -11,7 +11,7 @@ module colour_FSM (code, Clock, Resetn, Colour);
 	parameter: Black = 3'b000, Red = 3'b001, Blue = 3'b010, Green = 3'b011, White = 3'b100;
 
 	always @ (*) begin
-		case (code)
+		case (y_Q)
 			Black: 	if 		(code == 8'b01110010) 	y_D = Red;
 					else if (code == 8'b01111010) 	y_D = Blue;
 					else if (code == 8'b01101011) 	y_D = Green;
