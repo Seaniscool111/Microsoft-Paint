@@ -33,7 +33,7 @@ wire mouse_data_en; // valid mouse signal
 // ==========================================
 PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
     .CLOCK_50(CLOCK_50),
-    .reset(mouse_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
+    .reset(keyboard_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
     .the_command(8'h00), // optional, leave bracket blank
     .send_command(1'b0), // optional, leave bracket blank
@@ -52,7 +52,7 @@ PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
 
 PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .CLOCK_50(CLOCK_50),
-    .reset(keyboard_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
+    .reset(mouse_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
     .the_command(8'h00), // optional, leave bracket blank
     .send_command(1'b0), // optional, leave bracket blank
