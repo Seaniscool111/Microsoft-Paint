@@ -20,7 +20,7 @@ module test_pen_size(SW, LEDR, KEY, CLOCK_50);
    
 endmodule
 
-module pen_size (up, down, Clock, Resetn, z);
+module pen_size (up, down, Clock, Resetn, z, size_val);
     input up, down, Resetn;
     input Clock;
     output reg [2:0] z;
