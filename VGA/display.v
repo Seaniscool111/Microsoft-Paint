@@ -22,7 +22,7 @@ module display(CLOCK_50, SW, KEY, mouse_x, mouse_y, mouse_click, Color, VGA_R, V
 	// INSTANTIATE BRUSH_RENDERER 
 	brush_renderer B (
 		.clk(CLOCK_50),
-		.resetn(KEY[0]),
+		.resetn(KEY[0]),       	// Not resetting white 
 		.go(~KEY[1]),      		// (dummy mouse click)
 		.center_x(10'd320), 		// DUMMY X-Coordinate Middle   --- CHANGE TO MOUSE INPUT X (mouse_x)
 		.center_y(9'd240), 		// DUMMY Y-Coordinate Middle   --- CHANGE TO MOUSE INPUT Y (mouse_y)
