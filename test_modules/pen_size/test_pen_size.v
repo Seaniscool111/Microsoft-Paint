@@ -5,13 +5,15 @@ module test_pen_size(SW, LEDR, KEY, CLOCK_50);
     input [1:0] KEY;
 
 	wire [2:0] z;
+    wire [2:0] current_size; // <--- USED TO PASS TO brush-renderer
 
     pen_size P1 (
         .up(KEY[0]),
         .down(KEY[1]),
         .Clock(CLOCK_50),
         .Resetn(SW[0]),
-        .z(z)
+        .z(z),
+        .size_val(current_size)
     );
 	 
 	assign LEDR[9:7] = z[2:0];
@@ -22,6 +24,7 @@ module pen_size (up, down, Clock, Resetn, z);
     input up, down, Resetn;
     input Clock;
     output reg [2:0] z;
+    output reg [2:0] size_val;  // ASSIGNING numbers for brush size
     reg [1:0] y_Q, Y_D;
     parameter size1 = 2'b00, size2 = 2'b01, size3 = 2'b10;
 	 
@@ -70,12 +73,22 @@ module pen_size (up, down, Clock, Resetn, z);
         else
             y_Q <= Y_D;
    
- // ======== show pen size on the LEDR ==========  
+ // ======== show pen size on the LEDR + Output Numeric Size ==========  
     always @ (*) begin
         z[2:0] = 3'b000;
-        if (y_Q == size1) z[2] = 1'b1;
-        if (y_Q == size2) z[1] = 1'b1;
-        if (y_Q == size3) z[0] = 1'b1;
+        if (y_Q == size1) begin
+            z[2] = 1'b1; 
+            size_val = 3'd1; // <-- 1x1 size
+        end
+        if (y_Q == size2) begin
+            z[1] = 1'b1; 
+            size_val = 3'd2; // <-- 2x2 size
+        end
+
+        if (y_Q == size3) begin
+            z[0] = 1'b1; 
+            size_val = 3'd3; // <-- 3x3 size
+        end
     end
        
 endmodule
