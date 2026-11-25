@@ -6,7 +6,7 @@ module mouse  (
 	inout PS2_DAT,
 
 	output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
-	
+	output [9:0] LEDR,
 	output right_click, // is mouse right clicking
 	output middle_click, // is mouse middle clicking
 	output left_click, // is mouse left clicking
@@ -21,6 +21,8 @@ wire mouse_reset = reset | keyboard_mode;
 wire [7:0] mouse_data; // 8 bit word output of the mouse
 wire mouse_data_en; // valid mouse signal
 
+// optional qires
+
 // ===============================================
 // 			MODULE INSTANTIATIONS
 // ==========================================
@@ -28,16 +30,16 @@ PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .CLOCK_50(CLOCK_50),
     .reset(mouse_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
-    .the_command(8'h00), // optional, leave bracket blank
-    .send_command(1'b0), // optional, leave bracket blank
+    .the_command(8'h00), // command to be sent, 8 bit input
+    .send_command(1'b0), // command ready signal
 
     .PS2_CLK(PS2_CLK), //PIN_AD7
     .PS2_DAT(PS2_DAT), // PIN_AE7
 
     //outputs
 
-    .command_was_sent(), // optional, leave bracket blank
-    .error_communication_timed_out(), // optional, leave bracket blank
+    .command_was_sent(), //this signal is driven high once the command is successfully sent.
+    .error_communication_timed_out(), //indicates the transmission error when sending the command.
 
     .received_data(mouse_data), // last data received from the PS/2 bus. 8 bit word
     .received_data_en(mouse_data_en) // new data signal. driven high for one clock cycle when receieved_data changes
@@ -49,8 +51,8 @@ reg [1:0] byte_index;
 reg mouse_packet_received;
 
 always @ (posedge CLOCK_50) begin
-	if (reset || mouse_reset) begin
-		byte_index <= 2'b00;
+	if (reset) begin
+		byte_index <= 2'b0;
 		y_movement <= 8'b0;
 		x_movement <= 8'b0;
 		status_buttons <= 8'b0;
@@ -63,8 +65,10 @@ always @ (posedge CLOCK_50) begin
 		if (mouse_data_en) begin // data received from PS2 controller
 			case (byte_index)
 				2'b00: begin // status and buttons
+					if (mouse_data[3] == 1) begin
 					status_buttons <= mouse_data;
 					byte_index <= 2'b01; // mouse will now send x_movement 
+					end
 				end
 
 				2'b01: begin // x_movement
@@ -74,7 +78,7 @@ always @ (posedge CLOCK_50) begin
 
 				2'b10: begin // y_movement
 					y_movement <= mouse_data;
-					mouse_packet_received <= 1'b1; // done
+					if (status_buttons[3] == 1'b1) mouse_packet_received <= 1'b1; // done
 					byte_index <= 2'b00;
 				end
 			endcase
@@ -98,14 +102,14 @@ wire [10:0] cur_x_ext = {1'b0, cursor_x};
 wire [10:0] cur_y_ext = {1'b0, cursor_y};
 
 always @(posedge CLOCK_50) begin
-	if (reset || mouse_reset) begin
+	if (reset) begin
 		cursor_x <= 10'd320; // center of 640x480
 		cursor_y <= 10'd240;
 	end
 	else if (mouse_packet_received) begin
 		// X POSITION: clamp to [0, 639]
 		if (!x_sign) begin
-			if (cur_x_ext + x_mag_ext >= 11'd639)
+			if (cur_x_ext + x_mag_ext >= 10'd639)
 				cursor_x <= 10'd639;
 			else
 				cursor_x <= cursor_x + x_mag_ext[9:0];
@@ -118,8 +122,8 @@ always @(posedge CLOCK_50) begin
 		end
 
 		// Y POSITION: clamp to [0, 479]
-		if (!y_sign) begin
-			if (cur_y_ext + y_mag_ext >= 11'd479)
+		if (y_sign) begin
+			if (cur_y_ext + y_mag_ext >= 10'd479)
 				cursor_y <= 10'd479;
 			else
 				cursor_y <= cursor_y + y_mag_ext[9:0];
@@ -152,6 +156,8 @@ seg7Hex H2 (y1, HEX2);
 seg7Hex H1 (y_position[7:4], HEX1);
 seg7Hex H0 (y_position[3:0], HEX0);
 
+assign LEDR[9] = left_click;
+
 endmodule
 
 module seg7Hex (x, Display);
@@ -182,6 +188,3 @@ module seg7Hex (x, Display);
         endcase
     end
 endmodule
-
-
-
