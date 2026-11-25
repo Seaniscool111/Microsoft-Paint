@@ -2,8 +2,7 @@ module keyboard ( // top level module, main
 	input CLOCK_50, // will drive all the clocks
 	input [9:0] SW, // SW9 = MODE AMD SW 0 AND RESET
     
-    input keyboard_mode, // SW[9] = mouse mode, !SW[9] = keyboard
-    input mouse_mode,
+    input mouse_mode,// SW[9] = mouse mode, !SW[9] = keyboard
 	
     inout PS2_CLK,
 	inout PS2_DAT,
