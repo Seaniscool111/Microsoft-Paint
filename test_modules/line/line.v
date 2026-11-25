@@ -1,14 +1,54 @@
-module line (
+module line ( // using bresenhams line algorithm
     input Clock,
     input Resetn,
     input Go,
 
-    input [3:0] size
+    input [9:0] mouse_x, mouse_y;
 
     output [9:0] vga_x,
     output [8:0] vga_y,
     output write,
 )
+
+    // wires
+    
+
+    // extract first coordinate and second coordinate
+    wire extracted = 1'b0;
+    wire d;
+    reg [9:0] x1, x2, y1, y2;
+    
+
+    always @ (posedge Clock) begin
+        if (!Resetn) begin
+            x1 <= 10'b0;
+            x2 <= 10'b0;
+            y1 <= 10'b0;
+            y2 <= 10'b0;
+            extracted <= 1'b0;
+            d <= 1'b0;
+        end
+
+        else begin
+            if (extracted &&
+                (mouse_x != x1 && mouse_y != y1)
+                ) begin
+
+                x2 <= mouse_x;
+                y2 <= mouse_y; 
+                d <= 1'b1;
+                
+            end
+            else begin
+                x1 <= mouse_x;
+                y1 <= mouse_y;
+                extracted <= 1'b1;
+            end
+        end
+    end
+
+    
+
     localparam IDLE = 2'b00, DRAW = 2'b01;
     reg [1:0] y_Q, Y_D;
     wire done;
