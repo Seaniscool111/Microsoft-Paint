@@ -1,8 +1,10 @@
-module main (SW, LEDR, CLOCK_50, HEX5, HEX4, HEX3, HEX2, HEX1, HEX0);
+module main (
     input [9:0] SW;
     input [9:0] LEDR;
     input CLOCK_50;
     input HEX5, HEX4, HEX3, HEX2, HEX1, HEX0;
+
+);
 
     // VGA INSTANTIATION
     display D1 (
@@ -16,9 +18,8 @@ module main (SW, LEDR, CLOCK_50, HEX5, HEX4, HEX3, HEX2, HEX1, HEX0);
         .VGA_R(),
         .VGA_G(),
         .VGA_B(),
-       VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_CLK);
-	input CLOCK_50;
+        VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_CLK
+    );
 
-    )
 
 endmodule
