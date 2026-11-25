@@ -59,7 +59,7 @@ module brush_renderer (
             y_Q <= IDLE;
             xc  <= 3'd0;
             yc  <= 3'd0;
-				write <= 1'b0;
+			write <= 1'b0;
 				
         end
         else begin
