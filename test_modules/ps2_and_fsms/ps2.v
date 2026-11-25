@@ -80,13 +80,16 @@ always @ (posedge CLOCK_50) begin
 	end
 	
 	else if (keyboard_data_en) begin // data received from PS2 controller module
-		if (keyboard_data == 8'hF0) begin // key detected and received
+		if (key_released) begin
+			key_released <= 1'b0;
+		end
+		
+		else if (keyboard_data == 8'hF0) begin // key detected and received
 			key_released <= 1'b1; // key had been released
 		end 
 		
 		else begin // MAKE CODE -- KEY IS BEING PRESSED -- we are RECEIVING
 			key <= keyboard_data;
-			key_released <= 1'b0; // key has not been released yet
 		end		
 	end
 end
