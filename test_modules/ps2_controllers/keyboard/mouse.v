@@ -153,7 +153,6 @@ seg7Hex H2 (y1, HEX2);
 seg7Hex H1 (y_position[7:4], HEX1);
 seg7Hex H0 (y_position[3:0], HEX0);
 
-
 endmodule
 
 module seg7Hex (x, Display);
