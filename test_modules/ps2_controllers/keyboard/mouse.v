@@ -5,8 +5,6 @@ module mouse  (
 	inout PS2_CLK,
 	inout PS2_DAT,
 
-	input keyboard_mode, // SW[9] = mouse mode, !SW[9] = keyboard
-
 	output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
 	
 	output right_click, // is mouse right clicking
@@ -18,6 +16,7 @@ module mouse  (
 
 // PS2 CONTROLLER WIRES
 wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
+wire keyboard_mode = ~SW[9];
 wire mouse_reset = reset | keyboard_mode;
 wire [7:0] mouse_data; // 8 bit word output of the mouse
 wire mouse_data_en; // valid mouse signal
