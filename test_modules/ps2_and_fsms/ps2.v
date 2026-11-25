@@ -1,7 +1,6 @@
 module ps2  ( // top level module, main
 	input CLOCK_50, // will drive all the clocks
 	input [9:0] SW, // SW9 = MODE AMD SW 0 AND RESET
-	output [9:0] LEDR,
 	inout PS2_CLK,
 	inout PS2_DAT,
 
@@ -15,9 +14,9 @@ module ps2  ( // top level module, main
 	output [9:0] y_position // 10 bit y position --> hols up to decimal value 420 
 );
 
-wire reset = SW[0], // THIS IS AN ACTIVE HIGH RESET FOR PS2
-wire mouse_mode = SW[9],
-wire keyboard_mode = ~SW[9],
+wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
+wire mouse_mode = SW[9];
+wire keyboard_mode = ~SW[9];
 
 wire keyboard_reset = reset | mouse_mode;
 wire mouse_reset = reset | keyboard_mode;
