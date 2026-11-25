@@ -1,24 +1,25 @@
-module sample_PS2_instantiations ( // top level module, main
-	CLOCK_50,
-	SW,
-	LEDR,
-	PS2_CLK,
-	PS2_DAT,
-	HEX5, HEX4, HEX3, HEX2, HEX1, HEX0
+module mouse  ( 
+	input CLOCK_50, // will drive all the clocks
+	input [9:0] SW, // SW9 = MODE AMD SW 0 AND RESET
+	
+	inout PS2_CLK,
+	inout PS2_DAT,
+
+	input keyboard_mode, // SW[9] = mouse mode, !SW[9] = keyboard
+    input mouse_mode,
+
+	output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
+	
+	output right_click, // is mouse right clicking
+	output middle_click, // is mouse middle clicking
+	output left_click, // is mouse left clicking
+	output [9:0] x_position, // 10 bit x position --> holds up to decimal value 640
+	output [9:0] y_position // 10 bit y position --> hols up to decimal value 420 
 );
 
-// INPUT OUTPUTS
-input CLOCK_50; // will drive all the clocks
-input [9:0] SW;
-wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
-
-output [9:0] LEDR;
-output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0;
-
-inout PS2_CLK;
-inout PS2_DAT;
-
 // PS2 CONTROLLER WIRES
+wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
+wire mouse_reset = reset | keyboard_mode;
 wire [7:0] mouse_data; // 8 bit word output of the mouse
 wire mouse_data_en; // valid mouse signal
 
@@ -27,10 +28,10 @@ wire mouse_data_en; // valid mouse signal
 // ==========================================
 PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .CLOCK_50(CLOCK_50),
-    .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
+    .reset(mouse_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
-    .the_command(), // optional, leave bracket blank
-    .send_command(), // optional, leave bracket blank
+    .the_command(8'h00), // optional, leave bracket blank
+    .send_command(1'b0), // optional, leave bracket blank
 
     .PS2_CLK(PS2_CLK), //PIN_AD7
     .PS2_DAT(PS2_DAT), // PIN_AE7
@@ -44,19 +45,16 @@ PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .received_data_en(mouse_data_en) // new data signal. driven high for one clock cycle when receieved_data changes
 );
 
-// WIRES FOR USE WITH REST OF THE MODULE 
-wire [7:0] key_pressed = key;
-
 // =============== REGISTERS FOR MOUSE ==========
 reg [7:0] y_movement, x_movement, status_buttons; 
 reg [1:0] byte_index;
 reg mouse_packet_received;
 
 always @ (posedge CLOCK_50) begin
-	if (reset) begin
+	if (reset || mouse_reset) begin
 		byte_index <= 2'b00;
 		y_movement <= 8'b0;
-		x_movement <``= 8'b0;
+		x_movement <= 8'b0;
 		status_buttons <= 8'b0;
 		mouse_packet_received <= 1'b0;
 	end
@@ -83,8 +81,6 @@ always @ (posedge CLOCK_50) begin
 				end
 			endcase
 		end
-
-
 	end
 end
 
@@ -100,7 +96,7 @@ assign delta_x = x_sign ? {3'b111, x_movement} : {3'b000, x_movement};
 assign delta_y = y_sign ? {3'b111, y_movement} : {3'b000, y_movement};
 
 always @ (posedge CLOCK_50) begin
-	if (reset) begin
+	if (reset || mouse_reset) begin
 		cursor_x <= 10'd320; // middle of the screen
 		cursor_y <= 10'd240;
 	end
@@ -148,26 +144,27 @@ always @ (posedge CLOCK_50) begin
 end
 
 // WIRES FOR USE WITH REST OF MODULE
-wire left_click = status_buttons[0];
-wire right_click = status_buttons[1];
-wire middle_click = status_buttons[2];
-wire [9:0] x_position = cursor_x;
-wire [9:0] y_position = cursor_y;
+assign left_click = status_buttons[0];
+assign right_click = status_buttons[1];
+assign middle_click = status_buttons[2];
+assign x_position = cursor_x;
+assign y_position = cursor_y;
 
 // =========== TESTING MODULES ==============
-assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
-assign LEDR[8] = right_click;
-assign LEDR[9] = left_click;
+// assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
+// assign LEDR[8] = right_click;
+// assign LEDR[9] = left_click;
 
-wire [3:0] s = {2'b00, x_position[9:8]};
-seg7Hex H5 (s, HEX5); 
-seg7Hex H4 (x_position[7:4], HEX4);
-seg7Hex H3 (x_position[3:0], HEX3);
+// wire [3:0] s = {2'b00, x_position[9:8]};
+// seg7Hex H5 (s, HEX5); 
+// seg7Hex H4 (x_position[7:4], HEX4);
+// seg7Hex H3 (x_position[3:0], HEX3);
 
-wire [3:0] t = {2'b00, y_position[9:8]};
-seg7Hex H2 (t, HEX2); 
-seg7Hex H1 (y_position[7:4], HEX1);
-seg7Hex H0 (y_position[3:0], HEX0);
+// wire [3:0] t = {2'b00, y_position[9:8]};
+// seg7Hex H2 (t, HEX2); 
+// seg7Hex H1 (y_position[7:4], HEX1);
+// seg7Hex H0 (y_position[3:0], HEX0);
+
 
 endmodule
 
