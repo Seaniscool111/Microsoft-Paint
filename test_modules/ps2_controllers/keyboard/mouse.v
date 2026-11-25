@@ -6,7 +6,6 @@ module mouse  (
 	inout PS2_DAT,
 
 	input keyboard_mode, // SW[9] = mouse mode, !SW[9] = keyboard
-    input mouse_mode,
 
 	output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
 	
@@ -87,63 +86,55 @@ end
 // TRANSLATING TO POSITION
 reg [9:0] cursor_x; // 10 digits to hold 640
 reg [9:0] cursor_y;
-wire x_sign = status_buttons[4];
-wire y_sign = status_buttons[5];
-wire signed [10:0] delta_x;
-wire signed [10:0] delta_y;
 
-assign delta_x = x_sign ? {3'b111, x_movement} : {3'b000, x_movement};
-assign delta_y = y_sign ? {3'b111, y_movement} : {3'b000, y_movement};
+wire x_sign = status_buttons[4]; // 0 = +, 1 = -
+wire y_sign = status_buttons[5]; // 0 = +, 1 = -
 
-always @ (posedge CLOCK_50) begin
+wire [7:0] x_mag = x_sign ? ((~x_movement) + 8'd1) : x_movement;
+wire [7:0] y_mag = y_sign ? ((~y_movement) + 8'd1) : y_movement;
+
+wire [10:0] x_mag_ext = {3'b000, x_mag};
+wire [10:0] y_mag_ext = {3'b000, y_mag};
+wire [10:0] cur_x_ext = {1'b0, cursor_x};
+wire [10:0] cur_y_ext = {1'b0, cursor_y};
+
+always @(posedge CLOCK_50) begin
 	if (reset || mouse_reset) begin
-		cursor_x <= 10'd320; // middle of the screen
+		cursor_x <= 10'd320; // center of 640x480
 		cursor_y <= 10'd240;
 	end
-
 	else if (mouse_packet_received) begin
-
-		// X POSITION
-		if (!x_sign) begin // moving right
-			if (cursor_x + delta_x < 10'd640) begin
-				cursor_x <= cursor_x + delta_x;
-			end
-
-			else begin
+		// X POSITION: clamp to [0, 639]
+		if (!x_sign) begin
+			if (cur_x_ext + x_mag_ext >= 11'd639)
 				cursor_x <= 10'd639;
-			end
-		end else begin // moving left
-			if (cursor_x > delta_x[9:0]) begin
-				cursor_x <= cursor_x - delta_x[9:0]; // subtract positive magnitude of delta x
-			end
-
-			else begin
+			else
+				cursor_x <= cursor_x + x_mag_ext[9:0];
+		end
+		else begin
+			if (cur_x_ext <= x_mag_ext)
 				cursor_x <= 10'd0;
-			end
+			else
+				cursor_x <= cursor_x - x_mag_ext[9:0];
 		end
 
-		// Y POSITION
-		if (!y_sign) begin // moving down
-			if (cursor_y + delta_y < 10'd480) begin
-				cursor_y <= cursor_y + delta_y;
-			end
-
-			else begin
+		// Y POSITION: clamp to [0, 479]
+		if (!y_sign) begin
+			if (cur_y_ext + y_mag_ext >= 11'd479)
 				cursor_y <= 10'd479;
-			end
-		end else begin // moving up
-			if (cursor_y > delta_y[9:0]) begin
-				cursor_y <= cursor_y - delta_y[9:0]; // subtract positive magnitude of delta y
-			end
-
-			else begin
+			else
+				cursor_y <= cursor_y + y_mag_ext[9:0];
+		end
+		else begin
+			if (cur_y_ext <= y_mag_ext)
 				cursor_y <= 10'd0;
-			end
+			else
+				cursor_y <= cursor_y - y_mag_ext[9:0];
 		end
 	end
 end
 
-// WIRES FOR USE WITH REST OF MODULE
+// ASSIGN OUTPUTS
 assign left_click = status_buttons[0];
 assign right_click = status_buttons[1];
 assign middle_click = status_buttons[2];
@@ -151,19 +142,16 @@ assign x_position = cursor_x;
 assign y_position = cursor_y;
 
 // =========== TESTING MODULES ==============
-// assign LEDR[7:0] = key; // DRIVE LEDS FOR TESTING -- SHOULD SHOW THE MAKE CODE
-// assign LEDR[8] = right_click;
-// assign LEDR[9] = left_click;
 
-// wire [3:0] s = {2'b00, x_position[9:8]};
-// seg7Hex H5 (s, HEX5); 
-// seg7Hex H4 (x_position[7:4], HEX4);
-// seg7Hex H3 (x_position[3:0], HEX3);
+wire [3:0] x1 = {2'b00, x_position[9:8]};
+seg7Hex H5 (x1, HEX5); 
+seg7Hex H4 (x_position[7:4], HEX4);
+seg7Hex H3 (x_position[3:0], HEX3);
 
-// wire [3:0] t = {2'b00, y_position[9:8]};
-// seg7Hex H2 (t, HEX2); 
-// seg7Hex H1 (y_position[7:4], HEX1);
-// seg7Hex H0 (y_position[3:0], HEX0);
+wire [3:0] y1 = {2'b00, y_position[9:8]};
+seg7Hex H2 (y1, HEX2); 
+seg7Hex H1 (y_position[7:4], HEX1);
+seg7Hex H0 (y_position[3:0], HEX0);
 
 
 endmodule
