@@ -12,6 +12,7 @@ module keyboard ( // top level module, main
 
 // PS2 CONTROLLER WIRES
 wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
+wire mouse_mode = SW[9];
 wire keyboard_reset = reset | mouse_mode;
 wire [7:0] keyboard_data; // 8 bit word output of the keyboard
 wire keyboard_data_en; // valid keyboard signal
@@ -67,7 +68,3 @@ assign key_pressed = key;
 
 
 endmodule
-
-
-
-
