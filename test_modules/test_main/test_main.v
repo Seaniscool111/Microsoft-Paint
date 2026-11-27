@@ -10,10 +10,12 @@ module test_main(
     output VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_CLK,
     
     output [9:0] LEDR,
-    output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
+//    output [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0,
 
     inout PS2_CLK,
-    inout PS2_DAT
+    inout PS2_DAT,
+	 inout PS2_CLK2,
+	 inout PS2_DAT2
 );
     
     
@@ -40,14 +42,12 @@ module test_main(
         .PS2_DAT(PS2_DAT),
         .key_pressed(key_pressed)
     );
-    
+	     
     mouse M1 (
         .CLOCK_50(CLOCK_50),
         .SW(SW),
-        .PS2_CLK(PS2_CLK),
-        .PS2_DAT(PS2_DAT),
-        .HEX5(HEX5), .HEX4(HEX4), .HEX3(HEX3), .HEX2(HEX2), .HEX1(HEX1), .HEX0(HEX0),
-        .LEDR(LEDR),
+        .PS2_CLK(PS2_CLK2),
+        .PS2_DAT(PS2_DAT2),
         
         .right_click(right_click),
         .middle_click(middle_click),
@@ -66,18 +66,33 @@ module test_main(
         .Colour(colour)
     );
 
-    wire up = (key_pressed == 8'h55);
-    wire down = (key_pressed == 8'h4E);
+	// ==========================================
+   // 				PEN SIZE MODULE
+   // ==========================================
+	wire [2:0] current_size;
+	wire [2:0] size_led_wires;
+	
+	wire up = (key_pressed == 8'b01010101);
+	wire down = (key_pressed == 8'b01001110);
+	
+//	assign LEDR[9] = up;
+//	assign LEDR[8] = down;
+//	
+//	assign LEDR[7:0] = key_pressed;
+//	
+	pen_size PEN(
+		.up(up),          // CHANGE LATER TO KEYBOARD ARROW
+		.down(down),		    // CHANGE LATER TO KEYBOARD ARROW
+		.Clock(CLOCK_50),
+		.Resetn(KEY[0]), 		// CHANGE THIS LATER TO PROPER KEY
+		.z(),
+		.size_val(current_size)		
+	);
 
-    pen_size P1 (
-        .up(up),
-        .down(down),
-        .Clock(CLOCK_50),
-        .Resetn(!SW[0]),
-        .z(LEDR),
-
-    );
-    
+	// Connect to FPGA
+	assign LEDR[9:7] = size_led_wires;
+	
+	
     // INSTANTIATE BRUSH_RENDERER 
     brush_renderer B (
         .clk(CLOCK_50),
@@ -85,7 +100,7 @@ module test_main(
         .go(left_click),              // (dummy mouse click)
         .center_x(x_pos),         // DUMMY X-Coordinate Middle   --- CHANGE TO MOUSE INPUT X (mouse_x)
         .center_y(y_pos),         // DUMMY Y-Coordinate Middle   --- CHANGE TO MOUSE INPUT Y (mouse_y)
-        .size(3'd3),                 //(start with a fixed 3x3 brush to test, or SW[5:3])
+        .size(current_size),                 //(start with a fixed 3x3 brush to test, or SW[5:3])
         .vga_x(brush_x),
         .vga_y(brush_y),
         .write(brush_write));
@@ -109,6 +124,7 @@ module test_main(
     // Forcing vga_adapter variables to be this (changed already though)
     defparam A.RESOLUTION = "640x480";
     defparam A.BACKGROUND_IMAGE = "./MIF/white_640x480.mif";
-    defparam A.COLOR_DEPTH = 9;
+    defparam A.COLOR_DEPTH = 3;
         
 endmodule
+
