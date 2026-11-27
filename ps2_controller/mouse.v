@@ -96,7 +96,7 @@ wire [7:0] y_mag = y_sign ? ((~y_movement) + 8'd1) : y_movement;
 
 wire [10:0] x_mag_ext = {3'b000, x_mag};
 wire [10:0] y_mag_ext = {3'b000, y_mag};
-wire [10:0] cur_x_ext = {1'b0, cursor_x};
+wire [10:0] cur_x_ext = {1'b0, cursor_x}; 
 wire [10:0] cur_y_ext = {1'b0, cursor_y};
 
 always @(posedge CLOCK_50) begin
@@ -106,17 +106,18 @@ always @(posedge CLOCK_50) begin
 	end
 	else if (mouse_packet_received) begin
 		// X POSITION: clamp to [0, 639]
-		if (!x_sign) begin
-			if (cur_x_ext + x_mag_ext >= 10'd639)
-				cursor_x <= 10'd639;
+		if (!x_sign) begin // x_sign = 0 = positive = moving right
+			if (cur_x_ext + x_mag_ext >= 10'd639) // pos plus delta
+				cursor_x <= 10'd639; // clamp
 			else
-				cursor_x <= cursor_x + x_mag_ext[9:0];
+				cursor_x <= cursor_x + x_mag_ext[9:0]; // else, update pos
 		end
-		else begin
-			if (cur_x_ext <= x_mag_ext)
+
+		else begin // x_sign = 1 = negative = moving left
+			if (cur_x_ext <= x_mag_ext) 
 				cursor_x <= 10'd0;
 			else
-				cursor_x <= cursor_x - x_mag_ext[9:0];
+				cursor_x <= cursor_x - x_mag_ext[9:0]; 
 		end
 
 		// Y POSITION: clamp to [0, 479]
