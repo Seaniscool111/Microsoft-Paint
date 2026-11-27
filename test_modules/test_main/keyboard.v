@@ -2,7 +2,7 @@ module keyboard ( // top level module, main
 	input CLOCK_50, // will drive all the clocks
 	input [9:0] SW, // SW9 = MODE AMD SW 0 AND RESET
     	
-    inout PS2_CLK,
+   inout PS2_CLK,
 	inout PS2_DAT,
 
     output [7:0] key_pressed // 8 bit word output of the keyboard
@@ -10,8 +10,8 @@ module keyboard ( // top level module, main
 
 // PS2 CONTROLLER WIRES
 wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
-wire mouse_mode = SW[9];
-wire keyboard_reset = reset | mouse_mode;
+//wire mouse_mode = SW[9];
+//wire keyboard_reset = reset | mouse_mode;
 wire [7:0] keyboard_data; // 8 bit word output of the keyboard
 wire keyboard_data_en; // valid keyboard signal
 
@@ -20,7 +20,7 @@ wire keyboard_data_en; // valid keyboard signal
 // ==========================================
 PS2_Controller #(.INITIALIZE_MOUSE(0)) PS2_keyboard ( // KEYBOARD
     .CLOCK_50(CLOCK_50),
-    .reset(keyboard_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
+    .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
     .the_command(8'h00), // optional, leave bracket blank
     .send_command(1'b0), // optional, leave bracket blank
@@ -41,7 +41,7 @@ reg key_released; // "Break"
 
 // ======= register to hold the last valid scan code =========
 always @ (posedge CLOCK_50) begin 
-	if (reset || keyboard_reset) begin
+	if (reset) begin
 		key <= 8'b0; 
 		key_released <= 1'b0; 
 	end
@@ -49,9 +49,22 @@ always @ (posedge CLOCK_50) begin
 	else if (keyboard_data_en) begin // data received from PS2 controller module
 		if (key_released) begin
 			key_released <= 1'b0;
+			if (key == 8'h55) begin
+				key <= 8'b0;
+			end
+			if (key == 8'h4E) begin
+				key <= 8'b0;
+			end
 		end
 		
 		else if (keyboard_data == 8'hF0) begin // key detected and received
+//			if (key == 8'h55) begin
+//				key <= 8'b0;
+//			end
+//			if (key == 8'h4E) begin
+//				key <= 8'b0;
+//			end
+			
 			key_released <= 1'b1; // key had been released
 		end 
 		
@@ -66,3 +79,5 @@ assign key_pressed = key;
 
 
 endmodule
+
+
