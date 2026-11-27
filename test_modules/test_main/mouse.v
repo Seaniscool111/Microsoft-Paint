@@ -14,8 +14,8 @@ module mouse  (
 
 // PS2 CONTROLLER WIRES
 wire reset = SW[0]; // THIS IS AN ACTIVE HIGH RESET FOR PS2
-wire keyboard_mode = ~SW[9];
-wire mouse_reset = reset | keyboard_mode;
+//wire keyboard_mode = ~SW[9];
+//wire mouse_reset = reset | keyboard_mode;
 wire [7:0] mouse_data; // 8 bit word output of the mouse
 wire mouse_data_en; // valid mouse signal
 
@@ -26,7 +26,7 @@ wire mouse_data_en; // valid mouse signal
 // ==========================================
 PS2_Controller #(.INITIALIZE_MOUSE(1)) PS2_mouse ( // MOUSE
     .CLOCK_50(CLOCK_50),
-    .reset(mouse_reset), // THIS IS AN ACTIVE HIGH RESET !!!11
+    .reset(reset), // THIS IS AN ACTIVE HIGH RESET !!!11
 
     .the_command(8'h00), // command to be sent, 8 bit input
     .send_command(1'b0), // command ready signal
@@ -143,3 +143,5 @@ assign x_position = cursor_x;
 assign y_position = cursor_y;
 
 endmodule
+
+
