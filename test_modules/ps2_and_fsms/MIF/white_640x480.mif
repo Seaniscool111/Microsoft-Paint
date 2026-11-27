@@ -1,9 +1,0 @@
-WIDTH=3;
-DEPTH=307200; 		-- 160x120 --> 640x480
-
-ADDRESS_RADIX=UNS;
-DATA_RADIX=UNS;
-
-CONTENT BEGIN
-	[0..307199]  :   7;  -- 0 to 307200-1 AND decimal value for white
-END;
