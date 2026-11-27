@@ -1,58 +1,58 @@
-=============== WIRES TO BE USED WITH THE REST OF THE PROJECT =======================
+    =============== WIRES TO BE USED WITH THE REST OF THE PROJECT =======================
 
-mouse:
-wire left_click: 1 if left mouse button was clicked, 0 otherwise
-wire right_click: 1 if right mouse button was clicked, 0 otherwise
-wire middle_click: 1 if middle mouse button was clicked, 0 otherwise
+    mouse:
+    wire left_click: 1 if left mouse button was clicked, 0 otherwise
+    wire right_click: 1 if right mouse button was clicked, 0 otherwise
+    wire middle_click: 1 if middle mouse button was clicked, 0 otherwise
 
-wire [9:0] x_position: 10 bit value holding current x position on the VGA display
-wire [9:0] y_position: 10 bit value holding current y position on the VGA display
+    wire [9:0] x_position: 10 bit value holding current x position on the VGA display
+    wire [9:0] y_position: 10 bit value holding current y position on the VGA display
 
-ex. if (x_position == 10'd320) and (y_position == 10'd240), then you are in the MIDDLE 
-of the VGA display (640x480 pixel resolution)
+    ex. if (x_position == 10'd320) and (y_position == 10'd240), then you are in the MIDDLE 
+    of the VGA display (640x480 pixel resolution)
 
-keyboard:
-wire [7:0] key_pressed: 8 bit hexadecimal value holding the character code of the key key_pressed
+    keyboard:
+    wire [7:0] key_pressed: 8 bit hexadecimal value holding the character code of the key key_pressed
 
-ex. if (key_pressed == 8'h1E), then TOOL should be ERASE 
+    ex. if (key_pressed == 8'h1E), then TOOL should be ERASE 
 
-IMPORTANT:
-SW[9] = 1 --> MOUSE MODE
-SW[9] = 0 --> KEYBOARD MODE
+    IMPORTANT:
+    SW[9] = 1 --> MOUSE MODE
+    SW[9] = 0 --> KEYBOARD MODE
 
-========== KEYBOARD TO HOST CODES ==============
+    ========== KEYBOARD TO HOST CODES ==============
 
-TOOLS SWITCHING
+    TOOLS SWITCHING
 
-KEY - TOOL - HEXCODE - BINARY
-1 - BRUSH - 16 - 010110
-2 - ERASE - 1E - 011110
-3 - LINE - 26 - 100110
-4 - PAINT BUCKET - 25 - 100101
+    KEY - TOOL - HEXCODE - BINARY
+    1 - BRUSH - 16 - 010110
+    2 - ERASE - 1E - 011110
+    3 - LINE - 26 - 100110
+    4 - PAINT BUCKET - 25 - 100101
 
-COLOURS SWITCHING - NUMPAD
+    COLOURS SWITCHING - NUMPAD
 
-KEY - COLOUR - HEXCODE - BINARY
-1 - BLACK - 69 - 1101001
-2 - RED - 72 - 1110010
-3 - BLUE - 7A - 1111010
-4 - GREEN - 6B - 1101011
-5 - WHITE - 73 - 1110011
+    KEY - COLOUR - HEXCODE - BINARY
+    1 - BLACK - 69 - 1101001
+    2 - RED - 72 - 1110010
+    3 - BLUE - 7A - 1111010
+    4 - GREEN - 6B - 1101011
+    5 - WHITE - 73 - 1110011
 
-PEN SIZE 
+    PEN SIZE 
 
-ARROWUP - INCREASE SIZE - 55 - 1010101
-ARROWDOWN - DECREASE SIZE - 4E - 1001110
-
-
+    ARROWUP - INCREASE SIZE - 55 - 1010101
+    ARROWDOWN - DECREASE SIZE - 4E - 1001110
 
 
-=========== HOST TO KEYBOARD COMMAND ===========
-FA = ACK (acknowledge) (keyboard to host)
 
-HEXCODE --------------- FUNCTIONALITY
-F4                      Keyboard Enable: clears output buffer, enables keyboard, returns ACK
-                                        keycodes will be transmitted !!
-F5                      Keyboard Disable: resets keyboard, disables keyboard, returns ACK
-                                        keycodes will NOT be transmitted !!
+
+    =========== HOST TO KEYBOARD COMMAND ===========
+    FA = ACK (acknowledge) (keyboard to host)
+
+    HEXCODE --------------- FUNCTIONALITY
+    F4                      Keyboard Enable: clears output buffer, enables keyboard, returns ACK
+                                            keycodes will be transmitted !!
+    F5                      Keyboard Disable: resets keyboard, disables keyboard, returns ACK
+                                            keycodes will NOT be transmitted !!
 
